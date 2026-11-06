@@ -1,9 +1,9 @@
 import streamlit as st
 
 # 페이지 설정
-st.set_page_config(page_title="Santa's Dream House Photo Quiz", page_icon="🎅", layout="centered")
+st.set_page_config(page_title="Santa's Dream House Quiz", page_icon="🎅", layout="centered")
 
-# CSS 디자인 스타일링
+# CSS 스타일링
 st.markdown("""
     <style>
     .stButton>button {
@@ -13,8 +13,8 @@ st.markdown("""
         font-weight: bold;
     }
     .stImage > img {
-        border-radius: 15px; /* 이미지 모서리를 둥글게 */
-        box-shadow: 2px 2px 5px rgba(0,0,0,0.1); /* 그림자 효과 */
+        border-radius: 15px;
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -27,10 +27,10 @@ st.write("방 사진을 보고 수수께끼를 풀어 올바른 영어 문장을
 if "cleared_rooms" not in st.session_state:
     st.session_state.cleared_rooms = []
 
-# 4가지 장소와 퀴즈 데이터 정의 (이미지 경로 추가)
+# 4가지 장소와 퀴즈 데이터 정의 (실제 이미지 파일명 연결)
 rooms_quiz = {
     "🍳 Kitchen": {
-        "image": "kitchen.png", # 깃허브에 올릴 이미지 파일명
+        "image": "kitchen.png",
         "question": "What's in the kitchen? 요리를 할 수 있는 뜨거운 이것은 무엇일까요?",
         "options": ["There is a stove.", "There is a bed.", "There is a sofa."],
         "answer": "There is a stove.",
@@ -77,12 +77,11 @@ if selected_room != "선택하세요!":
     quiz = rooms_quiz[selected_room]
     st.markdown(f"## 📍 {selected_room} 퀴즈 미션")
     
-    # [추가된 기능] 퀴즈 화면 상단에 방 이미지 표시
+    # 퀴즈 미션 아래에 실제 생성한 이미지 출력
     try:
         st.image(quiz["image"], use_column_width=True)
-    except FileNotFoundError:
-        # 이미지가 깃허브에 없을 때 오류 메시지 대신 예비 텍스트 표시
-        st.warning(f"🏞️ [{quiz['image']}] 이미지가 필요합니다. (깃허브에 파일을 업로드해 주세요!)")
+    except Exception:
+        st.error(f"⚠️ 깃허브 저장소에 '{quiz['image']}' 파일이 없습니다. 이미지 파일을 업로드해 주세요!")
     
     # 이미 클리어한 방인지 확인
     if selected_room in st.session_state.cleared_rooms:
@@ -91,10 +90,8 @@ if selected_room != "선택하세요!":
         # 퀴즈 문제 출제
         st.info(f"💡 **문제**: {quiz['question']}")
         
-        # 보기 버튼 제공 (아이들이 직접 클릭해서 맞추기)
-        st.write("알맞은 영어 문장을 고르세요:")
-        
-        selected_option = st.radio("보기를 선택하세요:", quiz["options"], key=f"radio_{selected_room}")
+        # 보기 선택
+        selected_option = st.radio("알맞은 영어 문장을 고르세요:", quiz["options"], key=f"radio_{selected_room}")
         
         if st.button("정답 제출하기 🚀", key=f"btn_{selected_room}"):
             if selected_option == quiz["answer"]:
