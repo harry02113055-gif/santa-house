@@ -32,11 +32,14 @@ st.title("🎅 산타의 드림하우스 포토 퀴즈!")
 st.subheader("Lesson 6. What's in the Kitchen?")
 st.write("방 안의 모습을 살펴보고 수수께끼를 풀어 올바른 영어 문장을 완성해 주세요!")
 
-# 세션 상태 초기화 (클리어한 방 추적)
+# 세션 상태 초기화
 if "cleared_rooms" not in st.session_state:
     st.session_state.cleared_rooms = []
 
-# 4가지 장소와 퀴즈 데이터 정의 (이미지 파일명과 대체 이모지 매칭)
+if "current_room" not in st.session_state:
+    st.session_state.current_room = "선택하세요!"
+
+# 4가지 장소와 퀴즈 데이터 정의
 rooms_quiz = {
     "🍳 Kitchen": {
         "image": "kitchen.png",
@@ -82,15 +85,30 @@ for idx, room_name in enumerate(all_room_keys):
 
 st.markdown("---")
 
+# 방 선택 콜백 함수
+def on_room_change():
+    st.session_state.current_room = st.session_state.room_select_box
+
 # 방 선택 메뉴
 st.markdown("### 🚪 도전할 방을 선택하세요!")
-selected_room = st.selectbox("탐색할 장소를 고르세요:", ["선택하세요!"] + all_room_keys)
+options_list = ["선택하세요!"] + all_room_keys
+selected_index = options_list.index(st.session_state.current_room) if st.session_state.current_room in options_list else 0
+
+st.selectbox(
+    "탐색할 장소를 고르세요:", 
+    options_list, 
+    index=selected_index,
+    key="room_select_box",
+    on_change=on_room_change
+)
+
+selected_room = st.session_state.current_room
 
 if selected_room != "선택하세요!":
     quiz = rooms_quiz[selected_room]
     st.markdown(f"## 📍 {selected_room} 퀴즈 미션")
     
-    # 💡 [핵심 안전 장치] 이미지 파일에 문제가 있거나 깨져 있어도 에러 없이 카드 형태로 안전하게 출력됨
+    # 이미지 안전 로딩
     try:
         st.image(quiz["image"], use_column_width=True)
     except Exception:
@@ -110,7 +128,8 @@ if selected_room != "선택하세요!":
             if selected_option == quiz["answer"]:
                 st.success("정답입니다! 짝짝짝 🎉")
                 st.balloons()
-                st.session_state.cleared_rooms.append(selected_room)
+                if selected_room not in st.session_state.cleared_rooms:
+                    st.session_state.cleared_rooms.append(selected_room)
                 st.rerun()
             else:
                 st.error("아쉽네요! 다시 한번 생각해 볼까요? 🤔")
@@ -123,5 +142,5 @@ if len(st.session_state.cleared_rooms) == len(rooms_quiz):
     st.balloons()
     if st.button("🔄 게임 다시하기"):
         st.session_state.cleared_rooms = []
+        st.session_state.current_room = "선택하세요!"
         st.rerun()
-
