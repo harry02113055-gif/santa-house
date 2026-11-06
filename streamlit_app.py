@@ -39,7 +39,7 @@ if "cleared_rooms" not in st.session_state:
 if "current_room" not in st.session_state:
     st.session_state.current_room = "선택하세요!"
 
-# 4가지 장소와 퀴즈 데이터 정의
+# 4가지 장소와 퀴즈 데이터 정의 (가든 파일명 반영 완료)
 rooms_quiz = {
     "🍳 Kitchen": {
         "image": "kitchen.png",
@@ -63,7 +63,7 @@ rooms_quiz = {
         "answer": "There are two TVs.",
     },
     "🌳 Garden": {
-        "image": "garden.png",
+        "image": "Gemini_Generated_Image_rvkb5crvkb5crvkb.png", # 👈 정원 이미지 파일명 반영
         "emoji": "🌳 🌸 🌺",
         "question": "What's in the garden? 정원에 알록달록 피어있는 이것은?",
         "options": ["There are five flowers.", "There is a sofa.", "There are two TVs."],
@@ -144,3 +144,4 @@ if len(st.session_state.cleared_rooms) == len(rooms_quiz):
         st.session_state.cleared_rooms = []
         st.session_state.current_room = "선택하세요!"
         st.rerun()
+
