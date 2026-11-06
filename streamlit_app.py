@@ -1,4 +1,3 @@
-import os
 import streamlit as st
 
 # 페이지 설정
@@ -17,43 +16,52 @@ st.markdown("""
         border-radius: 15px;
         box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
     }
+    .fallback-box {
+        background-color: #f8f9fa;
+        padding: 40px;
+        border-radius: 15px;
+        text-align: center;
+        font-size: 50px;
+        border: 2px dashed #ced4da;
+        margin-bottom: 20px;
+    }
     </style>
 """, unsafe_allow_html=True)
 
 st.title("🎅 산타의 드림하우스 포토 퀴즈!")
 st.subheader("Lesson 6. What's in the Kitchen?")
-st.write("방 사진을 보고 수수께끼를 풀어 올바른 영어 문장을 완성해 주세요!")
+st.write("방 안의 모습을 살펴보고 수수께끼를 풀어 올바른 영어 문장을 완성해 주세요!")
 
 # 세션 상태 초기화 (클리어한 방 추적)
 if "cleared_rooms" not in st.session_state:
     st.session_state.cleared_rooms = []
 
-# 4가지 장소와 퀴즈 데이터 정의 (경로 자동 탐색 목록 포함)
+# 4가지 장소와 퀴즈 데이터 정의 (이미지 파일명과 대체 이모지 매칭)
 rooms_quiz = {
     "🍳 Kitchen": {
-        "filenames": ["kitchen.png", "streamlit_app/kitchen.png"],
-        "visual": "🍳 🍳 🪑 🪑",
+        "image": "kitchen.png",
+        "emoji": "🍳 🔥 🪑",
         "question": "What's in the kitchen? 요리를 할 수 있는 뜨거운 이것은 무엇일까요?",
         "options": ["There is a stove.", "There is a bed.", "There is a sofa."],
         "answer": "There is a stove.",
     },
     "🛏️ Bedroom": {
-        "filenames": ["bedroom.png", "streamlit_app/bedroom.png"],
-        "visual": "🛏️ 💡 💡 🛏️",
+        "image": "bedroom.png",
+        "emoji": "🛏️ 💡 🧸",
         "question": "What's in the bedroom? 잠을 자는 아늑한 공간에 있는 이것은?",
         "options": ["There are two TVs.", "There is a bed.", "There are five flowers."],
         "answer": "There is a bed.",
     },
     "📺 Living Room": {
-        "filenames": ["living_room.png", "streamlit_app/living_room.png", "living.png"],
-        "visual": "📺 📺 🛋️ 🛋️",
+        "image": "living_room.png",
+        "emoji": "📺 🛋️ 🪴",
         "question": "What's in the living room? 거실에 두 대가 있는 이것은?",
         "options": ["There is a stove.", "There are two TVs.", "There is a bed."],
         "answer": "There are two TVs.",
     },
     "🌳 Garden": {
-        "filenames": ["garden.png", "streamlit_app/garden.png"],
-        "visual": "🌸 🌺 🌻 🌳",
+        "image": "garden.png",
+        "emoji": "🌳 🌸 🌺",
         "question": "What's in the garden? 정원에 알록달록 피어있는 이것은?",
         "options": ["There are five flowers.", "There is a sofa.", "There are two TVs."],
         "answer": "There are five flowers.",
@@ -82,19 +90,11 @@ if selected_room != "선택하세요!":
     quiz = rooms_quiz[selected_room]
     st.markdown(f"## 📍 {selected_room} 퀴즈 미션")
     
-    # 💡 핵심: 현재 폴더나 하위 폴더(streamlit_app/) 중 파일이 있는 곳을 알아서 찾아냄!
-    image_path = None
-    for fname in quiz["filenames"]:
-        if os.path.exists(fname):
-            image_path = fname
-            break
-            
-    if image_path:
-        st.image(image_path, use_column_width=True)
-    else:
-        # 혹시라도 파일이 없으면 예쁜 이모지 카드가 대신 나와서 절대 에러가 안 남!
-        st.info(f"✨ [{selected_room}] 미션 일러스트 카드")
-        st.markdown(f"<h2 style='text-align: center;'>{quiz['visual']}</h2>", unsafe_allow_html=True)
+    # 💡 [핵심 안전 장치] 이미지 파일에 문제가 있거나 깨져 있어도 에러 없이 카드 형태로 안전하게 출력됨
+    try:
+        st.image(quiz["image"], use_column_width=True)
+    except Exception:
+        st.markdown(f'<div class="fallback-box">{quiz["emoji"]}</div>', unsafe_allow_html=True)
     
     # 이미 클리어한 방인지 확인
     if selected_room in st.session_state.cleared_rooms:
@@ -124,3 +124,4 @@ if len(st.session_state.cleared_rooms) == len(rooms_quiz):
     if st.button("🔄 게임 다시하기"):
         st.session_state.cleared_rooms = []
         st.rerun()
+
