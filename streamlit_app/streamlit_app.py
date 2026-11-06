@@ -1,9 +1,9 @@
 import streamlit as st
 
 # 페이지 설정
-st.set_page_config(page_title="Santa's Dream House Game", page_icon="🎅", layout="centered")
+st.set_page_config(page_title="Santa's Dream House Quiz", page_icon="🎅", layout="centered")
 
-# CSS로 디자인 살짝 꾸미기 (카드 느낌)
+# CSS 디자인 스타일링
 st.markdown("""
     <style>
     .stButton>button {
@@ -15,67 +15,91 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.title("🎅 산타의 드림하우스 꾸미기 대작전!")
+st.title("🎅 산타의 드림하우스 퀴즈 대작전!")
 st.subheader("Lesson 6. What's in the Kitchen?")
-st.write("방마다 숨겨진 물건을 찾고 영어 문장을 완성해서 산타의 집을 멋지게 꾸며주세요!")
+st.write("방마다 숨겨진 수수께끼를 풀고 올바른 영어 문장을 완성하여 산타의 집을 완성해 주세요!")
 
-# 세션 상태 초기화 (찾은 물건들 저장)
-if "found_items" not in st.session_state:
-    st.session_state.found_items = []
+# 세션 상태 초기화 (클리어한 방 추적)
+if "cleared_rooms" not in st.session_state:
+    st.session_state.cleared_rooms = []
 
-# 방과 물건 데이터 정의
-rooms = {
-    "🍳 Kitchen (부엌)": {"item": "stove", "sentence": "There is a stove.", "desc": "요리를 할 수 있는 뜨거운 난로예요!"},
-    "🛏️ Bedroom (침실)": {"item": "bed", "sentence": "There is a bed.", "desc": "산타가 잠을 자는 아늑한 침대예요!"},
-    "📺 Living Room (거실)": {"item": "TVs", "sentence": "There are two TVs.", "desc": "거실에 있는 두 대의 커다란 TV예요!"},
-    "🌳 Garden (정원)": {"item": "flowers", "sentence": "There are five flowers.", "desc": "알록달록 예쁜 꽃들이 피어있어요!"}
+# 4가지 장소와 퀴즈 데이터 정의
+rooms_quiz = {
+    "🍳 Kitchen": {
+        "question": "What's in the kitchen? 요리를 할 수 있는 뜨거운 이것은 무엇일까요?",
+        "options": ["There is a stove.", "There is a bed.", "There is a sofa."],
+        "answer": "There is a stove.",
+        "item": "stove"
+    },
+    "🛏️ Bedroom": {
+        "question": "What's in the bedroom? 잠을 자는 아늑한 공간에 있는 이것은?",
+        "options": ["There are two TVs.", "There is a bed.", "There are five flowers."],
+        "answer": "There is a bed.",
+        "item": "bed"
+    },
+    "📺 Living Room": {
+        "question": "What's in the living room? 거실에 두 대가 있는 이것은?",
+        "options": ["There is a stove.", "There are two TVs.", "There is a bed."],
+        "answer": "There are two TVs.",
+        "item": "TVs"
+    },
+    "🌳 Garden": {
+        "question": "What's in the garden? 정원에 알록달록 피어있는 이것은?",
+        "options": ["There are five flowers.", "There is a sofa.", "There are two TVs."],
+        "answer": "There are five flowers.",
+        "item": "flowers"
+    }
 }
 
-# 상단 진행 상황 (인벤토리 개념)
-st.markdown("### 🎒 나의 탐색 가방 (Inventory)")
+# 상단 진행 상황 (인벤토리)
+st.markdown("### 🎒 나의 미션 현황 (Mission Status)")
 progress_cols = st.columns(4)
-all_room_keys = list(rooms.keys())
+all_room_keys = list(rooms_quiz.keys())
 
-for idx, (room_name, data) in enumerate(rooms.items()):
+for idx, room_name in enumerate(all_room_keys):
     with progress_cols[idx]:
-        if data["item"] in st.session_state.found_items:
-            st.success(f"✅ {data['item'].upper()}")
+        if room_name in st.session_state.cleared_rooms:
+            st.success(f"✅ {room_name.split()[1]}")
         else:
-            st.info(f"🔒 ???")
+            st.warning(f"🔒 {room_name.split()[1]}")
 
 st.markdown("---")
 
 # 방 선택 메뉴
-st.markdown("### 🚪 탐색할 공간을 고르세요!")
-selected_room = st.selectbox("어느 방으로 갈까요?", ["방을 선택하세요!"] + all_room_keys)
+st.markdown("### 🚪 도전할 방을 선택하세요!")
+selected_room = st.selectbox("탐색할 장소를 고르세요:", ["선택하세요!"] + all_room_keys)
 
-if selected_room != "방을 선택하세요!":
-    data = rooms[selected_room]
-    st.markdown(f"## 📍 {selected_room}")
-    st.write(f"💡 **힌트**: {data['desc']}")
+if selected_room != "선택하세요!":
+    quiz = rooms_quiz[selected_room]
+    st.markdown(f"## 📍 {selected_room} 퀴즈 미션")
     
-    # 물건 찾기 버튼
-    if data["item"] not in st.session_state.found_items:
-        if st.button(f"🔍 방 안을 살펴보기 (Click!)"):
-            st.success(f"정답! 짝짝짝 🎉")
-            st.balloons()
-            st.session_state.found_items.append(data["item"])
-            st.rerun()
+    # 이미 클리어한 방인지 확인
+    if selected_room in st.session_state.cleared_rooms:
+        st.success(f"🎉 이미 정답을 맞춘 방입니다! 정답: **{quiz['answer']}**")
     else:
-        st.info(f"👍 이미 찾은 물건이에요!")
-    
-    # 발견한 문장 출력
-    if data["item"] in st.session_state.found_items:
-        st.markdown(f"### 💬 영어 문장 익히기:")
-        st.code(data["sentence"], language="text")
+        # 퀴즈 문제 출제
+        st.info(f"💡 **문제**: {quiz['question']}")
+        
+        # 보기 버튼 제공 (아이들이 직접 클릭해서 맞추기)
+        st.write("알맞은 영어 문장을 고르세요:")
+        
+        selected_option = st.radio("보기를 선택하세요:", quiz["options"], key=f"radio_{selected_room}")
+        
+        if st.button("정답 제출하기 🚀", key=f"btn_{selected_room}"):
+            if selected_option == quiz["answer"]:
+                st.success("정답입니다! 짝짝짝 🎉 산타가 아주 기뻐해요!")
+                st.balloons()
+                st.session_state.cleared_rooms.append(selected_room)
+                st.rerun()
+            else:
+                st.error("아쉽네요! 다시 한번 생각해 볼까요? 🤔")
 
 # 모든 미션 완료 체크
 st.markdown("---")
-if len(st.session_state.found_items) == len(rooms):
+if len(st.session_state.cleared_rooms) == len(rooms_quiz):
     st.balloons()
-    st.success("🏆 MISSION COMPLETE! 모든 방을 완벽하게 꾸몄습니다! 산타가 아주 기뻐해요!")
+    st.success("🏆 GRAND SLAM! 4개의 방 퀴즈를 모두 맞추고 산타의 드림하우스를 완벽하게 완성했습니다!")
     st.balloons()
     if st.button("🔄 게임 다시하기"):
-        st.session_state.found_items = []
+        st.session_state.cleared_rooms = []
         st.rerun()
-
