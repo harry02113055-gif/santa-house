@@ -1,7 +1,7 @@
 import streamlit as st
 
 # 페이지 설정
-st.set_page_config(page_title="Santa's Dream House Quiz", page_icon="🎅", layout="centered")
+st.set_page_config(page_title="Santa's Dream House Photo Quiz", page_icon="🎅", layout="centered")
 
 # CSS 디자인 스타일링
 st.markdown("""
@@ -12,46 +12,50 @@ st.markdown("""
         font-size: 18px;
         font-weight: bold;
     }
+    .stImage > img {
+        border-radius: 15px; /* 이미지 모서리를 둥글게 */
+        box-shadow: 2px 2px 5px rgba(0,0,0,0.1); /* 그림자 효과 */
+    }
     </style>
 """, unsafe_allow_html=True)
 
-st.title("🎅 산타의 드림하우스 퀴즈 대작전!")
+st.title("🎅 산타의 드림하우스 포토 퀴즈!")
 st.subheader("Lesson 6. What's in the Kitchen?")
-st.write("방마다 숨겨진 수수께끼를 풀고 올바른 영어 문장을 완성하여 산타의 집을 완성해 주세요!")
+st.write("방 사진을 보고 수수께끼를 풀어 올바른 영어 문장을 완성해 주세요!")
 
 # 세션 상태 초기화 (클리어한 방 추적)
 if "cleared_rooms" not in st.session_state:
     st.session_state.cleared_rooms = []
 
-# 4가지 장소와 퀴즈 데이터 정의
+# 4가지 장소와 퀴즈 데이터 정의 (이미지 경로 추가)
 rooms_quiz = {
     "🍳 Kitchen": {
+        "image": "kitchen.png", # 깃허브에 올릴 이미지 파일명
         "question": "What's in the kitchen? 요리를 할 수 있는 뜨거운 이것은 무엇일까요?",
         "options": ["There is a stove.", "There is a bed.", "There is a sofa."],
         "answer": "There is a stove.",
-        "item": "stove"
     },
     "🛏️ Bedroom": {
+        "image": "bedroom.png",
         "question": "What's in the bedroom? 잠을 자는 아늑한 공간에 있는 이것은?",
         "options": ["There are two TVs.", "There is a bed.", "There are five flowers."],
         "answer": "There is a bed.",
-        "item": "bed"
     },
     "📺 Living Room": {
+        "image": "living_room.png",
         "question": "What's in the living room? 거실에 두 대가 있는 이것은?",
         "options": ["There is a stove.", "There are two TVs.", "There is a bed."],
         "answer": "There are two TVs.",
-        "item": "TVs"
     },
     "🌳 Garden": {
+        "image": "garden.png",
         "question": "What's in the garden? 정원에 알록달록 피어있는 이것은?",
         "options": ["There are five flowers.", "There is a sofa.", "There are two TVs."],
         "answer": "There are five flowers.",
-        "item": "flowers"
     }
 }
 
-# 상단 진행 상황 (인벤토리)
+# 상단 진행 상황 (미션 현황)
 st.markdown("### 🎒 나의 미션 현황 (Mission Status)")
 progress_cols = st.columns(4)
 all_room_keys = list(rooms_quiz.keys())
@@ -73,6 +77,13 @@ if selected_room != "선택하세요!":
     quiz = rooms_quiz[selected_room]
     st.markdown(f"## 📍 {selected_room} 퀴즈 미션")
     
+    # [추가된 기능] 퀴즈 화면 상단에 방 이미지 표시
+    try:
+        st.image(quiz["image"], use_column_width=True)
+    except FileNotFoundError:
+        # 이미지가 깃허브에 없을 때 오류 메시지 대신 예비 텍스트 표시
+        st.warning(f"🏞️ [{quiz['image']}] 이미지가 필요합니다. (깃허브에 파일을 업로드해 주세요!)")
+    
     # 이미 클리어한 방인지 확인
     if selected_room in st.session_state.cleared_rooms:
         st.success(f"🎉 이미 정답을 맞춘 방입니다! 정답: **{quiz['answer']}**")
@@ -87,7 +98,7 @@ if selected_room != "선택하세요!":
         
         if st.button("정답 제출하기 🚀", key=f"btn_{selected_room}"):
             if selected_option == quiz["answer"]:
-                st.success("정답입니다! 짝짝짝 🎉 산타가 아주 기뻐해요!")
+                st.success("정답입니다! 짝짝짝 🎉")
                 st.balloons()
                 st.session_state.cleared_rooms.append(selected_room)
                 st.rerun()
@@ -98,7 +109,7 @@ if selected_room != "선택하세요!":
 st.markdown("---")
 if len(st.session_state.cleared_rooms) == len(rooms_quiz):
     st.balloons()
-    st.success("🏆 GRAND SLAM! 4개의 방 퀴즈를 모두 맞추고 산타의 드림하우스를 완벽하게 완성했습니다!")
+    st.success("🏆 MISSION COMPLETE! 모든 퀴즈를 맞추고 산타의 집을 완성했습니다!")
     st.balloons()
     if st.button("🔄 게임 다시하기"):
         st.session_state.cleared_rooms = []
